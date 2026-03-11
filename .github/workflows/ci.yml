@@ -12,5 +12,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run Makefile command
-        run: make hello
+      - name: Build Docker image
+        run: docker build -t devops-training .
+
+      - name: Run container
+        run: docker run devops-training
