@@ -12,8 +12,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build Docker image
-        run: docker build -t devops-training .
-
-      - name: Run container
-        run: docker run devops-training
+      - name: Run CI workflow
+        run: make ci
