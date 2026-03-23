@@ -36,7 +36,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and run container
+      - name: Build Docker image with tag
         run: |
-          make build
-          make run
+          IMAGE_TAG=${{ github.sha }}
+          docker build -t devops-training:$IMAGE_TAG .
+
+      - name: Run container
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker run devops-training:$IMAGE_TAG
