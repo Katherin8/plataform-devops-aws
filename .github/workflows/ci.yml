@@ -45,3 +45,16 @@ jobs:
         run: |
           IMAGE_TAG=${{ github.sha }}
           docker run devops-training:$IMAGE_TAG
+
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Tag Docker image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker tag devops-training:$IMAGE_TAG ghcr.io/${{ github.repository }}:$IMAGE_TAG
+
+      - name: Push Docker image
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker push ghcr.io/${{ github.repository }}:$IMAGE_TAG
