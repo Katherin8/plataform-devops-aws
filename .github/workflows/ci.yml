@@ -52,9 +52,11 @@ jobs:
       - name: Tag Docker image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker tag devops-training:$IMAGE_TAG ghcr.io/${{ github.repository }}:$IMAGE_TAG
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker tag devops-training:$IMAGE_TAG ghcr.io/$REPO:$IMAGE_TAG
 
       - name: Push Docker image
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker push ghcr.io/${{ github.repository }}:$IMAGE_TAG
+          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker push ghcr.io/$REPO:$IMAGE_TAG
