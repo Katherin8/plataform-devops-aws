@@ -7,6 +7,7 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write
 
 jobs:
   validate:
@@ -40,6 +41,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure AWS credentials
+        if: github.ref == 'refs/heads/main'
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::875703966134:role/github-actions-ecr-role
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        if: github.ref == 'refs/heads/main'
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
       - name: Build Docker image with tag
         run: |
           IMAGE_TAG=${{ github.sha }}
@@ -48,21 +61,16 @@ jobs:
       - name: Run container
         run: |
           IMAGE_TAG=${{ github.sha }}
-          docker run devops-training:$IMAGE_TAG
+          docker run --rm devops-training:$IMAGE_TAG
 
-      - name: Login to GitHub Container Registry
-        if: github.ref == 'refs/heads/main'
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-
-      - name: Tag Docker image
-        run: |
-          IMAGE_TAG=${{ github.sha }}
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker tag devops-training:$IMAGE_TAG ghcr.io/$REPO:$IMAGE_TAG
-
-      - name: Push Docker image
+      - name: Tag image for ECR
         if: github.ref == 'refs/heads/main'
         run: |
           IMAGE_TAG=${{ github.sha }}
-          REPO=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker push ghcr.io/$REPO:$IMAGE_TAG
+          docker tag devops-training:$IMAGE_TAG 875703966134.dkr.ecr.us-east-1.amazonaws.com/devops-training:$IMAGE_TAG
+
+      - name: Push image to ECR
+        if: github.ref == 'refs/heads/main'
+        run: |
+          IMAGE_TAG=${{ github.sha }}
+          docker push 875703966134.dkr.ecr.us-east-1.amazonaws.com/devops-training:$IMAGE_TAG
